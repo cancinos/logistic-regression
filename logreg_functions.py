@@ -33,14 +33,16 @@ def logistic_reggression(cross_validation, alpha, threshold, numIterations, trai
 
     #if not cross_validation :
 
-    for currentIteration in range(1, numIterations):
-        weights = math_engine(currentIteration, training_set, weights, threshold, alpha)
+    for currentIteration in range(0, numIterations):
         print(weights)
+        weights = math_engine(training_set, weights, threshold, alpha)
+    
+    evaluation_engine(threshold, weights, evaluation_set)
 
     return 0
 
 
-def math_engine(iteration, training_set, weights, threshold, alpha) :
+def math_engine(training_set, weights, threshold, alpha) :
 
     """
         3.1.1. First we calculate general values of the model, which means 
@@ -49,37 +51,22 @@ def math_engine(iteration, training_set, weights, threshold, alpha) :
     alpha = float(alpha)
     threshold = float(threshold)
 
-    fixed_acidity = weights.iloc[1] * training_set['fixed acidity']
-    volatile_acidity = weights.iloc[2] * training_set['volatile acidity']
-    citric_acid = weights.iloc[3] * training_set['citric acid']
-    residual_sugar = weights.iloc[4] * training_set['residual sugar']
-    chlorides = weights.iloc[5] * training_set['chlorides']
-    free_sulfur_dioxide = weights.iloc[6] * training_set['free sulfur dioxide']
-    total_sulfur_dioxide = weights.iloc[7] * training_set['total sulfur dioxide']
-    density = weights.iloc[8] * training_set['density']
-    pH = weights.iloc[9] * training_set['pH']
-    sulphates = weights.iloc[10] * training_set['sulphates']
-    alcohol = weights.iloc[11] * training_set['alcohol']
+    y = calculate_y(weights, training_set)
 
-    y = weights.iloc[0] + fixed_acidity + volatile_acidity + citric_acid + residual_sugar + chlorides + free_sulfur_dioxide + total_sulfur_dioxide + density + pH + sulphates + alcohol
+    y_hat = activation(y)
 
-    y_hat = pd.DataFrame(y).apply(lambda row : sigmod(row[0]), axis = 1)
-
-    y_threshold = pd.DataFrame(y_hat).apply(lambda row : threshold_function(row[0], threshold), axis = 1)
+    y_threshold = y_threshold_output(y_hat, threshold)
 
     """
         3.1.2. Next we'll calculate loss function and its weights prime value for every row
     """    
-
-    #loss = pd.DataFrame(y_hat).apply(lambda row : loss_function(row[0], training_set.iloc[row.name]), axis = 1)
+   
     weights_prime = pd.DataFrame(y_hat).apply(lambda row : prime_function(row[0], training_set.iloc[row.name]), axis = 1)
     
     """
         3.1.3. Then we calculate mean values for the loss function and the prime weights 
     """    
     delta_w = pd.DataFrame(weights_prime).mean()
-
-    print("------------------------------------------------------------")
 
     return pd.Series([weights[0] - alpha * delta_w[0], 
         weights[1] - alpha * delta_w[1], 
@@ -95,6 +82,35 @@ def math_engine(iteration, training_set, weights, threshold, alpha) :
         weights[11] - alpha * delta_w[11],
     ])
     
+def calculate_y(weights, set) :
+
+    fixed_acidity = weights.iloc[1] * set['fixed acidity']
+    volatile_acidity = weights.iloc[2] * set['volatile acidity']
+    citric_acid = weights.iloc[3] * set['citric acid']
+    residual_sugar = weights.iloc[4] * set['residual sugar']
+    chlorides = weights.iloc[5] * set['chlorides']
+    free_sulfur_dioxide = weights.iloc[6] * set['free sulfur dioxide']
+    total_sulfur_dioxide = weights.iloc[7] * set['total sulfur dioxide']
+    density = weights.iloc[8] * set['density']
+    pH = weights.iloc[9] * set['pH']
+    sulphates = weights.iloc[10] * set['sulphates']
+    alcohol = weights.iloc[11] * set['alcohol']
+
+    y = weights.iloc[0] + fixed_acidity + volatile_acidity + citric_acid + residual_sugar + chlorides + free_sulfur_dioxide + total_sulfur_dioxide + density + pH + sulphates + alcohol
+
+    return y
+
+def activation(y) :
+
+    y_hat = pd.DataFrame(y).apply(lambda row : sigmod(row[0]), axis = 1)
+
+    return y_hat
+
+def y_threshold_output(y_hat, threshold) :
+
+    y_threshold = pd.DataFrame(y_hat).apply(lambda row : threshold_function(row[0], threshold), axis = 1)
+
+    return pd.DataFrame(y_threshold)
 
 def sigmod(y) :
 
@@ -139,3 +155,30 @@ def prime_function(y_hat, training_value) :
     W_x_row = pd.Series(W_x)
 
     return W_x_row
+
+def evaluation_engine(threshold, weights, evaluation_set) :
+
+    
+    output = pd.DataFrame([[0, 0], [0, 0]], index = ['Positive', 'Negative'], columns = ['Positive', 'Negative'])
+    discrete_metrics = pd.DataFrame([0, 0], index = ['Precision', 'Recall'])
+
+    y = calculate_y(weights, evaluation_set)    
+    y_hat = activation(y)
+    y_threshold = y_threshold_output(y_hat, threshold)
+
+    #pd.DataFrame(y_threshold).to_csv('C:/Users/pcancinos/Documents/MADS-UVG/Machine Learning I/Tareas/logistic-regression/evaluation.csv')
+    evaluation = pd.DataFrame(np.where(y_threshold[0] == evaluation_set['quality'], True, False))
+
+    """
+        We tend to add +1 to the matrix to avoid "divided by zero" error
+    """
+
+    output.loc['Positive', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == 1)) + 1
+    output.loc['Positive', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == 0)) + 1
+    output.loc['Negative', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == 0)) + 1
+    output.loc['Negative', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == 1)) + 1
+
+    discrete_metrics.loc['Precision'] =  output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Positive'])
+    discrete_metrics.loc['Recall'] = output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Negative'])
+
+    return 0
