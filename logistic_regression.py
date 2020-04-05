@@ -3,7 +3,6 @@
 """ 
 import sys
 from logreg_functions import *
-from decimal import Decimal
 
 """
     Consoles outputs and inputs:
@@ -26,13 +25,13 @@ else :
     eval_type = 0
 
 print("4. Give me your learning rate (alpha)")
-alpha = Decimal(input('--> '))
+alpha = float(input('--> '))
 
 print("4. Give me your iterations number")
 numIterations = int(input('--> ')) 
 
 print("4. Give me your threshold")
-threshold = Decimal(input('--> ')) 
+threshold = float(input('--> ')) 
 
 """
 Datasets:
@@ -61,8 +60,23 @@ Two types of evaluation:
     1. Run logistic regression, then validate with evaluation set and present precision and recall values.
     2. Run logistic regression, then run 10-fold cross-validation with training set and present precision and
        recall values.
+        2.1 '1' = training and '0' for evaluating
 """
-model_outcome = logistic_reggression(not eval_type, alpha, threshold, numIterations, training_ds, evaluation_ds)
+if eval_type :
+    model_outcome = logistic_reggression(alpha, threshold, numIterations, training_ds, evaluation_ds)
+    print(model_outcome)
+else : 
+    factor = len(training_ds.index) / 10
+    training_ds = training_ds.reindex(np.random.permutation(training_ds.index))
+    training_ds = training_ds.reset_index(drop = True)
+
+    for currentFold in range(0, 10):
+        cross_validation_folding(currentFold, factor, training_ds)
+        dataset = training_ds.copy()
+        training_set = dataset[dataset.training == 1].iloc[: , 0 : 12].reset_index(drop = True)
+        evaluation_set = dataset[dataset.training == 0].iloc[: , 0 : 12].reset_index(drop = True)
+        model_outcome = logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set)
+        print(model_outcome)
 
 
 

@@ -4,7 +4,22 @@
 import numpy as np
 import pandas as pd
 import math as m
+import random
 
+def cross_validation_folding(fold, factor, training_set): 
+
+    i = int(factor * fold)
+    
+    if fold == 9:
+        j = len(training_set.index)
+    else :
+        j = int(factor) + i
+
+    
+    training_set['training'] = 1
+    training_set.iloc[i:j, : ]['training'] = 0
+    
+    return 0
 
 def feature_engineering(dataset) :
 
@@ -24,23 +39,17 @@ def feature_engineering(dataset) :
 
     return dataset
 
-def logistic_reggression(cross_validation, alpha, threshold, numIterations, training_set, evaluation_set) :
+def logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set) :
 
     """
         Initialize weights
     """
     weights = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-    #if not cross_validation :
-
     for currentIteration in range(0, numIterations):
-        print(weights)
         weights = math_engine(training_set, weights, threshold, alpha)
-    
-    evaluation_engine(threshold, weights, evaluation_set)
 
-    return 0
-
+    return evaluation_engine(threshold, weights, evaluation_set)
 
 def math_engine(training_set, weights, threshold, alpha) :
 
@@ -48,9 +57,6 @@ def math_engine(training_set, weights, threshold, alpha) :
         3.1.1. First we calculate general values of the model, which means 
         calculating y, y^ and its threshold
     """    
-    alpha = float(alpha)
-    threshold = float(threshold)
-
     y = calculate_y(weights, training_set)
 
     y_hat = activation(y)
@@ -60,7 +66,6 @@ def math_engine(training_set, weights, threshold, alpha) :
     """
         3.1.2. Next we'll calculate loss function and its weights prime value for every row
     """    
-   
     weights_prime = pd.DataFrame(y_hat).apply(lambda row : prime_function(row[0], training_set.iloc[row.name]), axis = 1)
     
     """
@@ -158,7 +163,6 @@ def prime_function(y_hat, training_value) :
 
 def evaluation_engine(threshold, weights, evaluation_set) :
 
-    
     output = pd.DataFrame([[0, 0], [0, 0]], index = ['Positive', 'Negative'], columns = ['Positive', 'Negative'])
     discrete_metrics = pd.DataFrame([0, 0], index = ['Precision', 'Recall'])
 
@@ -166,7 +170,6 @@ def evaluation_engine(threshold, weights, evaluation_set) :
     y_hat = activation(y)
     y_threshold = y_threshold_output(y_hat, threshold)
 
-    #pd.DataFrame(y_threshold).to_csv('C:/Users/pcancinos/Documents/MADS-UVG/Machine Learning I/Tareas/logistic-regression/evaluation.csv')
     evaluation = pd.DataFrame(np.where(y_threshold[0] == evaluation_set['quality'], True, False))
 
     """
@@ -181,4 +184,4 @@ def evaluation_engine(threshold, weights, evaluation_set) :
     discrete_metrics.loc['Precision'] =  output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Positive'])
     discrete_metrics.loc['Recall'] = output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Negative'])
 
-    return 0
+    return discrete_metrics
