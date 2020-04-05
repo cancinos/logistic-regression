@@ -164,7 +164,7 @@ def prime_function(y_hat, training_value) :
 def evaluation_engine(threshold, weights, evaluation_set) :
 
     output = pd.DataFrame([[0, 0], [0, 0]], index = ['Positive', 'Negative'], columns = ['Positive', 'Negative'])
-    discrete_metrics = pd.DataFrame([0, 0], index = ['Precision', 'Recall'])
+    discrete_metrics = pd.DataFrame(np.array([[0, 0]]), columns = ['Precision', 'Recall'])
 
     y = calculate_y(weights, evaluation_set)    
     y_hat = activation(y)
@@ -181,7 +181,7 @@ def evaluation_engine(threshold, weights, evaluation_set) :
     output.loc['Negative', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == 0)) + 1
     output.loc['Negative', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == 1)) + 1
 
-    discrete_metrics.loc['Precision'] =  output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Positive'])
-    discrete_metrics.loc['Recall'] = output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Negative'])
+    discrete_metrics['Precision'] =  output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Positive'])
+    discrete_metrics['Recall'] = output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Negative'])
 
     return discrete_metrics

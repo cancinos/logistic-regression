@@ -3,6 +3,7 @@
 """ 
 import sys
 from logreg_functions import *
+import pandas as pd
 
 """
     Consoles outputs and inputs:
@@ -69,14 +70,19 @@ else :
     factor = len(training_ds.index) / 10
     training_ds = training_ds.reindex(np.random.permutation(training_ds.index))
     training_ds = training_ds.reset_index(drop = True)
+    outcomes = pd.DataFrame(columns=["Precision", "Recall"])
 
     for currentFold in range(0, 10):
         cross_validation_folding(currentFold, factor, training_ds)
         dataset = training_ds.copy()
         training_set = dataset[dataset.training == 1].iloc[: , 0 : 12].reset_index(drop = True)
         evaluation_set = dataset[dataset.training == 0].iloc[: , 0 : 12].reset_index(drop = True)
+
         model_outcome = logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set)
-        print(model_outcome)
+        outcomes = outcomes.append(model_outcome) 
+
+    print(outcomes.mean())
+        
 
 
 
