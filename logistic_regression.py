@@ -73,6 +73,7 @@ else :
     outcomes = pd.DataFrame(columns=["Precision", "Recall"])
 
     for currentFold in range(0, 10):
+        print("Current fold: ", currentFold + 1)
         cross_validation_folding(currentFold, factor, training_ds)
         dataset = training_ds.copy()
         training_set = dataset[dataset.training == 1].iloc[: , 0 : 12].reset_index(drop = True)
@@ -81,6 +82,7 @@ else :
         model_outcome = logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set)
         outcomes = outcomes.append(model_outcome) 
 
+    print(outcomes)
     print(outcomes.mean())
         
 

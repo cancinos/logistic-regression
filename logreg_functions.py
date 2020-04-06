@@ -6,6 +6,7 @@ import pandas as pd
 import math as m
 import random
 
+
 def cross_validation_folding(fold, factor, training_set): 
 
     i = int(factor * fold)
@@ -103,21 +104,20 @@ def calculate_y(weights, set) :
 
     y = weights.iloc[0] + fixed_acidity + volatile_acidity + citric_acid + residual_sugar + chlorides + free_sulfur_dioxide + total_sulfur_dioxide + density + pH + sulphates + alcohol
 
-    return y
+    return pd.DataFrame(y, columns=['y'])
 
 def activation(y) :
-
-    y_hat = pd.DataFrame(y).apply(lambda row : sigmod(row[0]), axis = 1)
-
-    return y_hat
+    sigmoid_func = np.vectorize(sigmoid)
+    y_hat = sigmoid_func(np.array(y.y.values))
+    
+    return pd.DataFrame([y_hat])
 
 def y_threshold_output(y_hat, threshold) :
-
     y_threshold = pd.DataFrame(y_hat).apply(lambda row : threshold_function(row[0], threshold), axis = 1)
 
-    return pd.DataFrame(y_threshold)
+    return y_threshold
 
-def sigmod(y) :
+def sigmoid(y) :
 
     if y < 0 :
         return 1 - 1 / (1 + m.exp(y))
