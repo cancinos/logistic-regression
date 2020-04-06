@@ -4,6 +4,7 @@
 import sys
 from logreg_functions import *
 import pandas as pd
+import time
 
 """
     Consoles outputs and inputs:
@@ -39,7 +40,7 @@ Datasets:
     training_ds -> We load this dataset in order to train our model
     ? evaluation_ds -> We load this dataset in order to evaluate our model
 """
-
+start = time.time()
 training_ds = pd.read_csv(training_set_path)
 
 if eval_type :
@@ -73,7 +74,8 @@ else :
     outcomes = pd.DataFrame(columns=["Precision", "Recall"])
 
     for currentFold in range(0, 10):
-        print("Current fold: ", currentFold + 1)
+        print ("Your current progress: ", currentFold/10*100,"% complete ", end='\r', flush=True)
+
         cross_validation_folding(currentFold, factor, training_ds)
         dataset = training_ds.copy()
         training_set = dataset[dataset.training == 1].iloc[: , 0 : 12].reset_index(drop = True)
@@ -81,11 +83,13 @@ else :
 
         model_outcome = logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set)
         outcomes = outcomes.append(model_outcome) 
-
+        
+    print ("")
     print(outcomes)
     print(outcomes.mean())
         
-
+end = time.time()
+print(end - start)
 
 
 

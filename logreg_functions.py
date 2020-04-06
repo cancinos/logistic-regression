@@ -6,7 +6,6 @@ import pandas as pd
 import math as m
 import random
 
-
 def cross_validation_folding(fold, factor, training_set): 
 
     i = int(factor * fold)
@@ -18,7 +17,7 @@ def cross_validation_folding(fold, factor, training_set):
 
     
     training_set['training'] = 1
-    training_set.iloc[i:j, : ]['training'] = 0
+    training_set.loc[i:j, 'training'] = 0
     
     return 0
 
@@ -61,14 +60,26 @@ def math_engine(training_set, weights, threshold, alpha) :
     y = calculate_y(weights, training_set)
 
     y_hat = activation(y)
-
+    
     y_threshold = y_threshold_output(y_hat, threshold)
-
+  
     """
         3.1.2. Next we'll calculate loss function and its weights prime value for every row
     """    
-    weights_prime = pd.DataFrame(y_hat).apply(lambda row : prime_function(row[0], training_set.iloc[row.name]), axis = 1)
-    
+    weights_prime = [
+        (y_hat[0] - training_set['quality']) * 1, 
+        (y_hat[0] - training_set['quality']) * training_set['fixed acidity'],
+        (y_hat[0] - training_set['quality']) * training_set['volatile acidity'], 
+        (y_hat[0] - training_set['quality']) * training_set['citric acid'], 
+        (y_hat[0] - training_set['quality']) * training_set['residual sugar'], 
+        (y_hat[0] - training_set['quality']) * training_set['chlorides'], 
+        (y_hat[0] - training_set['quality']) * training_set['free sulfur dioxide'], 
+        (y_hat[0] - training_set['quality']) * training_set['total sulfur dioxide'], 
+        (y_hat[0] - training_set['quality']) * training_set['density'], 
+        (y_hat[0] - training_set['quality']) * training_set['pH'], 
+        (y_hat[0] - training_set['quality']) * training_set['sulphates'], 
+        (y_hat[0] - training_set['quality']) * training_set['alcohol']
+    ]
     """
         3.1.3. Then we calculate mean values for the loss function and the prime weights 
     """    
@@ -110,12 +121,12 @@ def activation(y) :
     sigmoid_func = np.vectorize(sigmoid)
     y_hat = sigmoid_func(np.array(y.y.values))
     
-    return pd.DataFrame([y_hat])
+    return pd.DataFrame(y_hat)
 
 def y_threshold_output(y_hat, threshold) :
-    y_threshold = pd.DataFrame(y_hat).apply(lambda row : threshold_function(row[0], threshold), axis = 1)
+    y_threshold = np.where(np.array(y_hat[0].values) >= threshold, 1, 0)
 
-    return y_threshold
+    return pd.DataFrame(y_threshold)
 
 def sigmoid(y) :
 
@@ -123,12 +134,6 @@ def sigmoid(y) :
         return 1 - 1 / (1 + m.exp(y))
 
     return 1 / (1 + m.exp(-y))
-
-def threshold_function(y_hat, threshold) :
-    if y_hat >= threshold :
-        return 1
-    else :
-        return 0
 
 def loss_function(y_hat, real_value) :
     return -real_value['quality'] * m.log(y_hat) - (1 - real_value['quality']) * m.log(1-y_hat)
