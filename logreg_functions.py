@@ -56,7 +56,7 @@ def math_engine(training_set, weights, threshold, alpha) :
     """
         3.1.1. First we calculate general values of the model, which means 
         calculating y, y^ and its threshold
-    """    
+    """      
     y = calculate_y(weights, training_set)
 
     y_hat = activation(y)
@@ -85,35 +85,35 @@ def math_engine(training_set, weights, threshold, alpha) :
     """    
     delta_w = pd.DataFrame(weights_prime).mean()
 
-    return pd.Series([weights[0] - alpha * delta_w[0], 
-        weights[1] - alpha * delta_w[1], 
-        weights[2] - alpha * delta_w[2],
-        weights[3] - alpha * delta_w[3],
-        weights[4] - alpha * delta_w[4],
-        weights[5] - alpha * delta_w[5],
-        weights[6] - alpha * delta_w[6],
-        weights[7] - alpha * delta_w[7],
-        weights[8] - alpha * delta_w[8],
-        weights[9] - alpha * delta_w[9],
-        weights[10] - alpha * delta_w[10],
-        weights[11] - alpha * delta_w[11],
+    return pd.Series([weights[0] -(alpha * delta_w[0]), 
+        weights[1] - (alpha * delta_w[1]), 
+        weights[2] - (alpha * delta_w[2]),
+        weights[3] - (alpha * delta_w[3]),
+        weights[4] - (alpha * delta_w[4]),
+        weights[5] - (alpha * delta_w[5]),
+        weights[6] - (alpha * delta_w[6]),
+        weights[7] - (alpha * delta_w[7]),
+        weights[8] - (alpha * delta_w[8]),
+        weights[9] - (alpha * delta_w[9]),
+        weights[10] - (alpha * delta_w[10]),
+        weights[11] - (alpha * delta_w[11]),
     ])
     
 def calculate_y(weights, set) :
 
-    fixed_acidity = weights.iloc[1] * set['fixed acidity']
-    volatile_acidity = weights.iloc[2] * set['volatile acidity']
-    citric_acid = weights.iloc[3] * set['citric acid']
-    residual_sugar = weights.iloc[4] * set['residual sugar']
-    chlorides = weights.iloc[5] * set['chlorides']
-    free_sulfur_dioxide = weights.iloc[6] * set['free sulfur dioxide']
-    total_sulfur_dioxide = weights.iloc[7] * set['total sulfur dioxide']
-    density = weights.iloc[8] * set['density']
-    pH = weights.iloc[9] * set['pH']
-    sulphates = weights.iloc[10] * set['sulphates']
-    alcohol = weights.iloc[11] * set['alcohol']
+    fixed_acidity = weights[1] * set['fixed acidity']
+    volatile_acidity = weights[2] * set['volatile acidity']
+    citric_acid = weights[3] * set['citric acid']
+    residual_sugar = weights[4] * set['residual sugar']
+    chlorides = weights[5] * set['chlorides']
+    free_sulfur_dioxide = weights[6] * set['free sulfur dioxide']
+    total_sulfur_dioxide = weights[7] * set['total sulfur dioxide']
+    density = weights[8] * set['density']
+    pH = weights[9] * set['pH']
+    sulphates = weights[10] * set['sulphates']
+    alcohol = weights[11] * set['alcohol']
 
-    y = weights.iloc[0] + fixed_acidity + volatile_acidity + citric_acid + residual_sugar + chlorides + free_sulfur_dioxide + total_sulfur_dioxide + density + pH + sulphates + alcohol
+    y = weights[0] + fixed_acidity + volatile_acidity + citric_acid + residual_sugar + chlorides + free_sulfur_dioxide + total_sulfur_dioxide + density + pH + sulphates + alcohol
 
     return pd.DataFrame(y, columns=['y'])
 
@@ -129,10 +129,8 @@ def y_threshold_output(y_hat, threshold) :
     return pd.DataFrame(y_threshold)
 
 def sigmoid(y) :
-
     if y < 0 :
         return 1 - 1 / (1 + m.exp(y))
-
     return 1 / (1 + m.exp(-y))
 
 def loss_function(y_hat, real_value) :
@@ -181,10 +179,10 @@ def evaluation_engine(threshold, weights, evaluation_set) :
         We tend to add +1 to the matrix to avoid "divided by zero" error
     """
 
-    output.loc['Positive', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == 1)) + 1
-    output.loc['Positive', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == 0)) + 1
-    output.loc['Negative', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == 0)) + 1
-    output.loc['Negative', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == 1)) + 1
+    output.loc['Positive', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == True)) + 1
+    output.loc['Positive', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == False)) + 1
+    output.loc['Negative', 'Negative'] = np.count_nonzero(np.logical_and(y_threshold[0] == 0, evaluation[0] == True)) + 1
+    output.loc['Negative', 'Positive'] = np.count_nonzero(np.logical_and(y_threshold[0] == 1, evaluation[0] == False)) + 1
 
     discrete_metrics['Precision'] =  output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Positive'])
     discrete_metrics['Recall'] = output.loc['Positive', 'Positive'] / (output.loc['Positive', 'Positive'] + output.loc['Negative', 'Negative'])

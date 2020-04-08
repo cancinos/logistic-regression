@@ -5,6 +5,7 @@ import sys
 from logreg_functions import *
 import pandas as pd
 import time
+from numpy import arange
 
 """
     Consoles outputs and inputs:
@@ -29,10 +30,10 @@ else :
 print("4. Give me your learning rate (alpha)")
 alpha = float(input('--> '))
 
-print("4. Give me your iterations number")
+print("5. Give me your iterations number")
 numIterations = int(input('--> ')) 
 
-print("4. Give me your threshold")
+print("6. Give me your threshold")
 threshold = float(input('--> ')) 
 
 """
@@ -64,18 +65,16 @@ Two types of evaluation:
        recall values.
         2.1 '1' = training and '0' for evaluating
 """
+print("Loading...")
 if eval_type :
-    model_outcome = logistic_reggression(alpha, threshold, numIterations, training_ds, evaluation_ds)
-    print(model_outcome)
+        model_outcome = logistic_reggression(alpha, threshold, numIterations, training_ds, evaluation_ds)
+        print(model_outcome.mean())
 else : 
     factor = len(training_ds.index) / 10
     training_ds = training_ds.reindex(np.random.permutation(training_ds.index))
     training_ds = training_ds.reset_index(drop = True)
     outcomes = pd.DataFrame(columns=["Precision", "Recall"])
-
     for currentFold in range(0, 10):
-        print ("Your current progress: ", currentFold/10*100,"% complete ", end='\r', flush=True)
-
         cross_validation_folding(currentFold, factor, training_ds)
         dataset = training_ds.copy()
         training_set = dataset[dataset.training == 1].iloc[: , 0 : 12].reset_index(drop = True)
@@ -83,13 +82,13 @@ else :
 
         model_outcome = logistic_reggression(alpha, threshold, numIterations, training_set, evaluation_set)
         outcomes = outcomes.append(model_outcome) 
+        print ("Your current progress: ", (currentFold + 1)/10*100,"% complete ", end='\r', flush=True)
         
     print ("")
-    print(outcomes)
     print(outcomes.mean())
         
 end = time.time()
-print(end - start)
+print("Elapsed time: ", end - start, " secs")
 
 
 
