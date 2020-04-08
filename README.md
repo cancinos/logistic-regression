@@ -83,6 +83,21 @@ iterations per learning, and the threshold for the value of the activation funct
     ```
 ### Recommended hyperparams 
 
+> "_If correctly identifying positives is important for us, then we should choose a model with higher Sensitivity. 
+However, if correctly identifying negatives is more important, then we should choose specificity as the measurement metric._" Parul Pandey
+
+In order to deeply understand this I highly recommend to read this article first [Simplifying the ROC and AUC metrics](https://towardsdatascience.com/understanding-the-roc-and-auc-curves-a05b68550b69). It made me realize what I have to do in order to achieve the hyperparams that optimize my model. One of the things that I realize was that the threshold value is one of the most important hyperparams that we have, this is because that I can control the output we have on our classification. If it is too low, we can increase false positive and on other side if it is too high, we can increase our false negatives. ** In my case I decided that I'll bet for my specificity about my dataset**, and that's how I decided the following.
+
+
+
+What I did was to fixed my learning rate at 0.00001, my iteration number at 1,000 and I iterate over my threshold value giving it increases of 0.01, and this were the results:
+
+<p align="center">
+  <img width="581" height="324" src="https://github.com/cancinos/logistic-regression/blob/qa_branch/graph_precision_recall.PNG">
+</p>
+
+**I highly recommend using a threshold of 0.2 in order to increse aour specifity.**
+
 ## Authors
 
 * **Pablo Cancinos** - *Future Data Scientist* - [cancinos](https://github.com/cancinos)
