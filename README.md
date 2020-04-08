@@ -96,7 +96,7 @@ What I did was to fixed my learning rate at 0.00001, my iteration number at 1,00
   <img width="581" height="324" src="https://github.com/cancinos/logistic-regression/blob/qa_branch/graph_precision_recall.PNG">
 </p>
 
-**I highly recommend using a threshold of 0.2 in order to increse aour specifity.**
+**I highly recommend using a threshold of 0.2 in order to increse our specificity.**
 
 ## Authors
 
